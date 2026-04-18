@@ -2,22 +2,22 @@ import { seedStories } from "./seed";
 import type { Story } from "./types";
 
 declare global {
-  var __saveStore: Story[] | undefined;
-  var __saveRateLimit: Map<string, number[]> | undefined;
+  var __syttStore: Story[] | undefined;
+  var __syttRateLimit: Map<string, number[]> | undefined;
 }
 
 function ensureStore(): Story[] {
-  if (!globalThis.__saveStore) {
-    globalThis.__saveStore = [...seedStories];
+  if (!globalThis.__syttStore) {
+    globalThis.__syttStore = [...seedStories];
   }
-  return globalThis.__saveStore;
+  return globalThis.__syttStore;
 }
 
 function ensureRateLimit(): Map<string, number[]> {
-  if (!globalThis.__saveRateLimit) {
-    globalThis.__saveRateLimit = new Map();
+  if (!globalThis.__syttRateLimit) {
+    globalThis.__syttRateLimit = new Map();
   }
-  return globalThis.__saveRateLimit;
+  return globalThis.__syttRateLimit;
 }
 
 export function getAllStories(): Story[] {
