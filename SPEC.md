@@ -47,7 +47,7 @@
 
 ### 1. Глобус (react-globe.gl + three.js scene injection)
 
-Без прелюдии — при открытии сайта человек сразу видит дышащую планету. Intro была убрана: в кризисе никому не нужен кинематографичный wrapper, нужно сразу место.
+При открытии сайта человек сразу видит дышащую планету. Без intro, без заставки — в кризисе не до кинематографического вступления.
 
 Тёмный dotted globe на всю страницу. Реализация:
 
@@ -68,7 +68,7 @@
 **Два shader-shell'а** (procedural fire через simplex-noise fbm):
 - radius 0.17R и 0.10R (четверть диаметра планеты максимум)
 - разные noise scales для глубины
-- `NormalBlending` (не Additive — Additive давал «солнце» вместо огня)
+- `NormalBlending` — Additive делает «солнце» вместо огня
 - Цвета в shader: halo `#660F0A` → middle `#C76125` → core `#F2AD52`
 - Дыхание через uniform `uBreath` (приходит из `breathAmount(performance.now())`)
 
@@ -123,7 +123,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 
 **Низ экрана:**
 - `BreathIndicator` — показывается только после `ready=true` (чтобы «breathe in/out» не мерцал под скелетом загрузки)
-- Добавление истории происходит через клик по preview-искре на собственной позиции на глобусе (см. StorySparks) — отдельная кнопка «Tell your story» была убрана как избыточная
+- Добавление истории — клик по preview-искре на собственной позиции на глобусе (см. StorySparks)
 - Справа внизу — кнопка `focus me` (иконка-прицел), центрирует глобус на твоих координатах
 
 ### 6. Добавление истории
@@ -136,13 +136,13 @@ Hit → `onSelect(story)` → StoryOverlay.
 | Что чувствуешь (feeling) | textarea | Нет | до 300 |
 | Что помогает (coped) | textarea | Нет | до 300. Только при редактировании своей истории — на создании не принимается, добавляется PATCH'ем позже |
 
-Язык не выбирается — форма всегда шлёт `lang: "en"`. БД-тип `Lang = "en" \| "ru"` оставлен для совместимости со старыми записями.
+Язык не выбирается — форма всегда шлёт `lang: "en"`. БД-тип `Lang = "en" \| "ru"`, где `"ru"` покрывает только чтение legacy-записей с русским текстом.
 
 **Координаты не вводятся вообще.** Сервер определяет по IP через `ipapi.co` (см. `lib/geolocate.ts`), округляет до 0.1°. При неудаче: dev → fallback Moscow `(55.8, 37.6)`, prod → 500 error.
 
 Состояния формы:
 - `idle` → обычная
-- `submitting` → кнопка с `animate-breathing` (пульсация в ритме дыхания вместо слова «Checking…» — визуально чище)
+- `submitting` → кнопка с `animate-breathing` (пульсация в ритме дыхания)
 - `success` → `✦ Your story is on the map now.` на 1.8 сек, потом close
 - `error` rejected → `We can't publish this exact wording. Try rephrasing.`
 - `error` rate_limited → обычная подсказка подождать
@@ -173,7 +173,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 - Serif: **Lora**
 - Sans: **Nunito**
 
-Оба через `next/font/google` с `--font-lora` / `--font-nunito` CSS-переменными (subsets: latin + cyrillic — cyrillic оставлен на случай если в БД есть старые русские истории, отображение корректно).
+Оба через `next/font/google` с `--font-lora` / `--font-nunito` CSS-переменными. Subsets: latin + cyrillic — cyrillic нужен для корректного отображения legacy-записей на русском.
 
 ### Дыхание UI (ритм 4-1-6)
 
@@ -274,7 +274,7 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 
 **Prod: Upstash Redis через Vercel Marketplace.** `@upstash/ratelimit` sliding window — 3 submissions / 1h per IP hash. Код: [lib/ratelimit.ts](lib/ratelimit.ts).
 
-- Env: `KV_REST_API_URL` / `KV_REST_API_TOKEN` (legacy KV-имена; `Redis.fromEnv()` подхватывает их через встроенный fallback с `UPSTASH_REDIS_REST_*`). Vercel Storage integration проставляет сам — Custom Prefix оставлять пустым. Для локалки — скопировать эти две переменные из Vercel.
+- Env: `KV_REST_API_URL` / `KV_REST_API_TOKEN`. `Redis.fromEnv()` читает их через встроенный fallback с `UPSTASH_REDIS_REST_*`. Vercel Storage integration проставляет сам — Custom Prefix оставлять пустым. Для локалки — скопировать эти две переменные из Vercel.
 - Counter увеличивается на **каждую попытку**, не только на успешный insert. Это осознанно: иначе спамер мог бы бесконечно жечь Groq-запросы через moderation-rejects без последствий. В crisis-контексте Groq-промпт настроен пропускать боль, так что для легитимного пользователя 3 rejects подряд крайне маловероятны.
 - Prefix ключей: `sytt:rl:*`. `analytics: true` — rate-limit события видны в UI Upstash.
 - **Fail-closed в prod**: отсутствие env / сбой Redis → 429.
@@ -296,7 +296,7 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 
 ## i18n
 
-Не локализовано. UI только English. JSON [messages/en.json](messages/en.json) вынесен чтобы копирайт не был разбросан по компонентам. `useLang()` возвращает статически EN-бандл — оставлен как hook для совместимости с существующими компонентами.
+UI только English. Копирайт лежит в [messages/en.json](messages/en.json) чтобы не был разбросан по компонентам. `useLang()` возвращает статически EN-бандл.
 
 ---
 
@@ -394,7 +394,7 @@ NEXT_PUBLIC_SITE_URL=https://sytt.vercel.app
 
 ---
 
-## Что НЕ делаем (на первой версии)
+## Вне объёма проекта
 
 - Авторизация, аккаунты
 - Комментарии к историям
