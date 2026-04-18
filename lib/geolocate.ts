@@ -29,7 +29,7 @@ export async function geolocateIp(ip: string): Promise<GeoResult> {
     const timer = setTimeout(() => ac.abort(), 2500);
     const res = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
       signal: ac.signal,
-      headers: { "User-Agent": "save-yourself/1.0" },
+      headers: { "User-Agent": "sytt/1.0" },
       cache: "no-store",
     });
     clearTimeout(timer);
