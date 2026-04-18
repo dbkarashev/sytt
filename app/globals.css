@@ -21,6 +21,11 @@ body {
   height: 100%;
 }
 
+html {
+  background: var(--color-night-0);
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
