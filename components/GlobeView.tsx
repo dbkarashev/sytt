@@ -24,7 +24,7 @@ const Globe = dynamic(() => import("./Globe"), {
 
 type Coords = { lat: number; lng: number };
 
-const MINE_KEY = "save.mine";
+const MINE_KEY = "sytt.mine";
 const PAN_THRESHOLD_KM = 500;
 
 function haversineKm(a: Coords, b: Coords): number {
