@@ -31,11 +31,20 @@ function checkRegex(
   if (URL_RE.test(combined)) return { approved: false, reason: "contains_url" };
   if (EMAIL_RE.test(combined)) return { approved: false, reason: "contains_email" };
   if (PHONE_RE.test(combined)) return { approved: false, reason: "contains_phone" };
-  if (REPEAT_RE.test(text)) return { approved: false, reason: "repeated_chars" };
 
-  const letters = text.replace(/[^A-Za-zА-Яа-яЁё]/g, "");
-  if (letters.length > 8 && letters === letters.toUpperCase()) {
-    return { approved: false, reason: "all_caps" };
+  for (const [name, value] of [
+    ["text", text],
+    ["feeling", feeling ?? ""],
+    ["coped", coped ?? ""],
+  ] as const) {
+    if (!value) continue;
+    if (REPEAT_RE.test(value)) {
+      return { approved: false, reason: `repeated_chars:${name}` };
+    }
+    const letters = value.replace(/[^A-Za-zА-Яа-яЁё]/g, "");
+    if (letters.length > 8 && letters === letters.toUpperCase()) {
+      return { approved: false, reason: `all_caps:${name}` };
+    }
   }
 
   const en = findStopwordEn(combined);
