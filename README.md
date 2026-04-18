@@ -1,8 +1,6 @@
 # sytt
 
-An interactive 3D globe of anonymous stories from people going through hard times. Each story is a spark on the planet. Inside, a slow breathing fire core — 4 seconds in, 1 hold, 6 out.
-
-The name is shorthand for *"save yourself this time"*, a line from RAYE × Hans Zimmer. The project has one idea: nothing has to change tonight, you just have to stay.
+An interactive 3D globe of anonymous stories from people going through hard times.
 
 Live: https://sytt.vercel.app
 
