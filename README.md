@@ -2,7 +2,7 @@
 
 An interactive 3D globe of anonymous stories from people going through hard times.
 
-Live: https://sytt.vercel.app
+[![Live](https://img.shields.io/badge/🌐_Live-sytt.vercel.app-0969da?style=for-the-badge)](https://sytt.vercel.app)
 
 ## Stack
 
