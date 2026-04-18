@@ -14,7 +14,8 @@ const nunito = Nunito({
   display: "swap",
 });
 
-const title = "save yourself this time";
+const tabTitle = "sytt";
+const tagline = "save yourself this time";
 const description =
   "a map of everyone still holding on. you don't have to fix it tonight. you just have to stay.";
 
@@ -29,9 +30,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: title, template: "%s · save yourself this time" },
+  title: { default: tabTitle, template: `%s · ${tabTitle}` },
   description,
-  applicationName: "save yourself this time",
+  applicationName: tabTitle,
   keywords: [
     "anonymous stories",
     "mental health",
@@ -41,14 +42,14 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
-    title,
+    title: tagline,
     description,
     locale: "en_US",
-    siteName: "save yourself this time",
+    siteName: tagline,
   },
   twitter: {
     card: "summary_large_image",
-    title,
+    title: tagline,
     description,
   },
   icons: {
