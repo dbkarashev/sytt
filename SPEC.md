@@ -1,4 +1,4 @@
-# sytt — актуальное ТЗ
+# sytt — спецификация
 
 ## Концепция
 
@@ -66,7 +66,7 @@
 Компонент [components/BreathingCore.tsx](components/BreathingCore.tsx). Вставляется в `globeRef.current.scene()`.
 
 **Два shader-shell'а** (procedural fire через simplex-noise fbm):
-- radius 0.17R и 0.10R (четверть диаметра планеты макс. — по ТЗ)
+- radius 0.17R и 0.10R (четверть диаметра планеты максимум)
 - разные noise scales для глубины
 - `NormalBlending` (не Additive — Additive давал «солнце» вместо огня)
 - Цвета в shader: halo `#660F0A` → middle `#C76125` → core `#F2AD52`
@@ -162,7 +162,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 Земля (точки):       #6B8A9E
 Искра «в темноте»:   #FF9050
 Искра «держится»:    #FFB060
-Свечение core:       #F2AD52 (после refactor на shader — чуть темнее чем ТЗ #FFD480, чтобы не «солнцем» светило)
+Свечение core:       #F2AD52
 Свечение middle:     #C76125
 Свечение halo:       #660F0A
 Текст:               rgba(255,255,255,0.85)
@@ -217,9 +217,9 @@ create policy "Anyone can read stories" on public.stories for select using (true
 
 Seed 12 начальных историй включён в тот же SQL-файл (идемпотентно).
 
-**Новая схема ключей (Supabase обновила API keys в 2025):**
-- `sb_publishable_…` заменяет `anon` → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (не используется в коде пока, зарезервировано)
-- `sb_secret_…` заменяет `service_role` → `SUPABASE_SECRET_KEY` (все серверные записи)
+**Схема ключей Supabase:**
+- `sb_publishable_…` → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (в коде не используется, зарезервировано под клиентскую читалку)
+- `sb_secret_…` → `SUPABASE_SECRET_KEY` (все серверные записи и чтение идут через него)
 
 Код читает [lib/supabase.ts](lib/supabase.ts) — прямой REST через `fetch` (не supabase-js, чтобы не раздувать бандл).
 
@@ -236,16 +236,9 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 
 ---
 
-## Модерация (**новая архитектура 2026**)
+## Модерация
 
-Оригинальный ТЗ предлагал 3 слоя: Regex + OpenAI Moderation + Google Perspective API.
-
-**Реальность апреля 2026:**
-- Perspective API **закрывается к концу 2026**, новые заявки не принимаются с февраля 2026 → удалён
-- Стандартные moderation-классификаторы (OpenAI, Mistral, Perspective) системно **false-positive блокируют выражение боли** — на платформе для людей в кризисе это вредит пользователям
-- Нужно **контекстное понимание**, не классификатор
-
-### Архитектура — 2 слоя
+Два слоя: быстрый regex-фильтр и контекстная LLM-проверка. Стандартные moderation-классификаторы (OpenAI Moderation, Mistral, Perspective) не подошли — они false-positive блокируют выражение боли, что для платформы про людей в кризисе вредит пользователям. Нужно контекстное понимание, не классификатор.
 
 **Слой 1 — Regex + stopwords** (моментально, 0 false positives для crisis):
 - Длина 20–500
@@ -274,15 +267,6 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 В dev:
 - Отсутствие `GROQ_API_KEY` → approve (skip)
 - Сбой Groq → reject (чтобы заметить проблему)
-
-### Обоснование ухода от OpenAI
-
-OpenAI Moderation работает, но:
-- Дублирует Groq-слой по функциям
-- Классификатор не понимает «страдающий» vs «агрессор» так же хорошо как LLM с промптом
-- Требует привязанной карты (OpenAI 2024+ не даёт 200 без payment method даже для free moderation)
-
-$5 депозит на OpenAI, сделанный до решения об уходе, остаётся на аккаунте — не списывается пока не используются платные API. Ключ удалён из `.env.local` и `.env.example`.
 
 ---
 
@@ -398,7 +382,7 @@ NEXT_PUBLIC_SITE_URL=https://sytt.vercel.app
 
 ---
 
-## Статус (на 18 апреля 2026)
+## Статус
 
 Проект задеплоен на Vercel, прод работает на `sytt.vercel.app`. Ветки: `main` — production (под branch protection, merge только через PR с rebase/linear history), `dev` — рабочая, preview-деплои на каждый push. Speed Insights подключены — данные по LCP/INP/CLS копятся.
 
