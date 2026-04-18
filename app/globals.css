@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-night-0: #070b14;
+  --color-night-1: #0d1321;
+  --color-night-2: #0f1a2b;
+  --color-cold: #6b8a9e;
+  --color-warm: #d4864e;
+  --color-warm-bright: #e09b5c;
+  --color-amber: #c9935a;
+  --color-ink: rgba(255, 255, 255, 0.82);
+  --color-ink-soft: rgba(255, 255, 255, 0.5);
+  --color-ink-ghost: rgba(255, 255, 255, 0.32);
+
+  --font-serif: var(--font-lora), Lora, Georgia, serif;
+  --font-sans: var(--font-nunito), Nunito, ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  font-family: var(--font-sans);
+  background: radial-gradient(ellipse at center,
+    var(--color-night-2) 0%,
+    var(--color-night-1) 45%,
+    var(--color-night-0) 100%);
+  color: var(--color-ink);
 }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/*
+  Breathing: 4s inhale (peak at 36.36%), 1s hold (flat to 45.45%),
+  6s exhale back to trough. Total 11s.
+*/
+@keyframes breathing {
+  0%     { opacity: 0.55; }
+  36.36% { opacity: 1; }
+  45.45% { opacity: 1; }
+  100%   { opacity: 0.55; }
+}
+
+@keyframes breathing-glow {
+  0%     { opacity: 0.75; box-shadow: 0 0 14px rgba(201, 147, 90, 0.22); }
+  36.36% { opacity: 1;    box-shadow: 0 0 30px rgba(201, 147, 90, 0.6); }
+  45.45% { opacity: 1;    box-shadow: 0 0 30px rgba(201, 147, 90, 0.6); }
+  100%   { opacity: 0.75; box-shadow: 0 0 14px rgba(201, 147, 90, 0.22); }
+}
+
+.animate-fade-up {
+  animation: fade-up 1.6s ease-out both;
+}
+
+.animate-breathing {
+  animation: breathing 11s ease-in-out infinite;
+}
+
+.animate-breathing-glow {
+  animation: breathing-glow 11s ease-in-out infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.animate-cursor {
+  animation: cursor-blink 900ms steps(1) infinite;
+}
+
+@keyframes skeleton-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
