@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { GlobeMethods } from "react-globe.gl";
-import { useLang } from "@/lib/i18n";
 import AddStoryModal from "./AddStoryModal";
 import BreathIndicator from "./BreathIndicator";
 import BreathingCore from "./BreathingCore";
@@ -58,7 +57,6 @@ function writeMine(ids: Set<string>) {
 }
 
 export default function GlobeView() {
-  const { t } = useLang();
   const [stories, setStories] = useState<Story[]>([]);
   const [ready, setReady] = useState(false);
   const [selected, setSelected] = useState<Story | null>(null);
@@ -256,29 +254,11 @@ export default function GlobeView() {
         onNext={canNavigate ? () => navigateStory(1) : undefined}
       />
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-8 z-[500] flex flex-col items-center gap-3">
-        {!previewCoords && !hasOwnSparkHere && (
-          <button
-            type="button"
-            onClick={() => {
-              closeOverlays();
-              setModalOpen(true);
-            }}
-            aria-label={t.map.tellStory}
-            className="pointer-events-auto group flex flex-col items-center gap-2"
-          >
-            <span
-              aria-hidden
-              className="block h-3 w-3 rounded-full bg-[#ffb060] shadow-[0_0_14px_rgba(255,176,96,0.65),0_0_28px_rgba(224,112,48,0.35)] transition-transform group-hover:scale-125"
-              style={{ animation: "breathing 11s ease-in-out infinite" }}
-            />
-            <span className="font-serif text-[11px] italic tracking-wide text-[var(--color-ink-ghost)] transition-colors group-hover:text-[var(--color-ink-soft)]">
-              {t.map.tellStory}
-            </span>
-          </button>
-        )}
-        <BreathIndicator />
-      </div>
+      {ready && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-8 z-[500] flex justify-center">
+          <BreathIndicator />
+        </div>
+      )}
 
       {me && (
         <button
