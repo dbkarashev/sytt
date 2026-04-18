@@ -8,9 +8,11 @@ An interactive 3D globe of anonymous stories from people going through hard time
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in values
+cp .env.example .env.local
 npm run dev
 ```
+
+Fill in the copied `.env.local` before running if you want live Supabase/Groq/Upstash; otherwise the app falls back as described below.
 
 Dev works with any subset of env vars. Behaviour when each is missing:
 
@@ -38,8 +40,9 @@ Dev works with any subset of env vars. Behaviour when each is missing:
 
 `main` auto-deploys to production on Vercel. `dev` and any other branch get preview deploys on push. Branch protection on `main` requires a pull request; linear history is enforced.
 
+From `dev`, after pushing your commits:
+
 ```bash
-# from dev, after pushes
 gh pr create --base main --head dev --fill
 gh pr merge --rebase
 git reset --hard origin/main && git push --force-with-lease  # keep dev aligned
