@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Save Yourself / Сохрани себя
 
-## Getting Started
+Interactive 3D globe of anonymous stories from people going through hard times. Breathing rhythm 4-1-6. You don't have to win — you just have to get through this.
 
-First, run the development server:
+Source of truth for architecture and decisions: **[SPEC.md](SPEC.md)**.
+
+## Stack
+
+- Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
+- `react-globe.gl` + `three` + `h3-js` for the dotted globe with a fire core
+- Supabase (PostgreSQL + REST) for story storage
+- Groq (Llama 3.3 70B) with a crisis-aware prompt for moderation
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Without `SUPABASE_SECRET_KEY` the app falls back to an in-memory store seeded with 12 sample stories. Without `GROQ_API_KEY` moderation in dev skips the LLM layer; in production it fails closed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase setup
 
-## Learn More
+Run [supabase-setup.sql](supabase-setup.sql) in the Supabase SQL Editor once. It creates the `stories` table, indexes, RLS policy, and seeds 12 initial stories (idempotent).
 
-To learn more about Next.js, take a look at the following resources:
+## Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See [.env.example](.env.example). You need:
+- `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY` — storage
+- `GROQ_API_KEY` — moderation
+- `IP_SALT` — any random string used to hash IPs for rate limiting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tested target is Vercel. Push to GitHub, import the repo in Vercel, copy env vars from `.env.local` into Vercel → Settings → Environment Variables, deploy.
