@@ -6,9 +6,14 @@ import type { Story } from "@/lib/types";
 type Props = {
   story: Story | null;
   onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
 };
 
 const FADE_MS = 500;
+const SWAP_DELAY_MS = 120;
+const SWIPE_DX_MIN = 60;
+const SWIPE_DY_MAX = 40;
 const BASE_DELAY = 32;
 const SECTION_PAUSE = 650;
 
@@ -21,7 +26,7 @@ function charDelay(ch: string): number {
   return BASE_DELAY;
 }
 
-export default function StoryOverlay({ story, onClose }: Props) {
+export default function StoryOverlay({ story, onClose, onPrev, onNext }: Props) {
   const [rendered, setRendered] = useState<Story | null>(null);
   const [visible, setVisible] = useState(false);
   const [shownText, setShownText] = useState(0);
@@ -29,6 +34,9 @@ export default function StoryOverlay({ story, onClose }: Props) {
   const [shownCoped, setShownCoped] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevIdRef = useRef<string | null>(null);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const didSwipe = useRef(false);
 
   const text = rendered?.text.toLocaleLowerCase() ?? "";
   const feeling = rendered?.feeling?.toLocaleLowerCase() ?? "";
@@ -45,7 +53,10 @@ export default function StoryOverlay({ story, onClose }: Props) {
       return () => cancelAnimationFrame(r);
     }
     setVisible(false);
-    const to = setTimeout(() => setRendered(null), FADE_MS);
+    const to = setTimeout(() => {
+      setRendered(null);
+      prevIdRef.current = null;
+    }, FADE_MS);
     return () => clearTimeout(to);
   }, [story]);
 
@@ -100,7 +111,10 @@ export default function StoryOverlay({ story, onClose }: Props) {
       timerRef.current = setTimeout(scheduleCoped, charDelay(ch));
     };
 
-    const initial = setTimeout(scheduleText, FADE_MS);
+    const isSwap = prevIdRef.current !== null && prevIdRef.current !== rendered.id;
+    prevIdRef.current = rendered.id;
+    const initialDelay = isSwap ? SWAP_DELAY_MS : FADE_MS;
+    const initial = setTimeout(scheduleText, initialDelay);
 
     return () => {
       cancelled = true;
@@ -113,10 +127,12 @@ export default function StoryOverlay({ story, onClose }: Props) {
     if (!rendered) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowRight") onNext?.();
+      else if (e.key === "ArrowLeft") onPrev?.();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [rendered, onClose]);
+  }, [rendered, onClose, onPrev, onNext]);
 
   if (!rendered) return null;
 
@@ -156,15 +172,74 @@ export default function StoryOverlay({ story, onClose }: Props) {
         ×
       </button>
 
+      {onPrev && (
+        <button
+          type="button"
+          aria-label="previous story"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrev();
+          }}
+          className="pointer-events-auto absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 text-[var(--color-ink-ghost)] opacity-50 transition-all hover:opacity-100 hover:text-[var(--color-warm-bright)] sm:flex"
+          style={{ opacity: visible ? undefined : 0 }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+            <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
+      {onNext && (
+        <button
+          type="button"
+          aria-label="next story"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNext();
+          }}
+          className="pointer-events-auto absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 text-[var(--color-ink-ghost)] opacity-50 transition-all hover:opacity-100 hover:text-[var(--color-warm-bright)] sm:flex"
+          style={{ opacity: visible ? undefined : 0 }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
+            <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
+
       <div
         className={`pointer-events-auto relative w-full max-w-2xl px-6 pb-10 pt-8 sm:pb-12 ${
           !fullyShown ? "cursor-pointer" : ""
         }`}
         onClick={(e) => {
+          if (didSwipe.current) {
+            didSwipe.current = false;
+            e.stopPropagation();
+            return;
+          }
           if (!fullyShown) {
             e.stopPropagation();
             handleContentClick();
           }
+        }}
+        onPointerDown={(e) => {
+          didSwipe.current = false;
+          swipeStart.current = { x: e.clientX, y: e.clientY };
+        }}
+        onPointerUp={(e) => {
+          const start = swipeStart.current;
+          swipeStart.current = null;
+          if (!start) return;
+          const dx = e.clientX - start.x;
+          const dy = e.clientY - start.y;
+          if (Math.abs(dx) > SWIPE_DX_MIN && Math.abs(dy) < SWIPE_DY_MAX) {
+            didSwipe.current = true;
+            e.stopPropagation();
+            if (dx < 0) onNext?.();
+            else onPrev?.();
+          }
+        }}
+        onPointerCancel={() => {
+          swipeStart.current = null;
         }}
         style={{
           opacity: visible ? 1 : 0,
@@ -190,11 +265,8 @@ export default function StoryOverlay({ story, onClose }: Props) {
 
         {hasCoped && feelingDone && textDone && (
           <>
-            <div
-              className="my-9 flex justify-center text-[var(--color-warm-bright)]/40"
-              aria-hidden
-            >
-              <span className="text-[13px] leading-none">✦</span>
+            <div className="my-8 flex justify-center" aria-hidden>
+              <span className="block h-px w-10 bg-[var(--color-warm-bright)]/25" />
             </div>
             <p className="font-serif text-[15px] leading-[1.65] text-[var(--color-ink-soft)] sm:text-[16px]">
               {coped.slice(0, shownCoped)}
