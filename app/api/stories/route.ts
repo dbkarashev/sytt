@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { fetchStories, insertStory } from "@/lib/supabase";
 import { moderate } from "@/lib/moderate";
-import { isRateLimited, recordSubmission } from "@/lib/store";
+import { isRateLimited } from "@/lib/ratelimit";
 import { hashIp, ipFromHeaders } from "@/lib/ip";
 import { geolocateIp } from "@/lib/geolocate";
 import type { Lang } from "@/lib/types";
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   const ip = ipFromHeaders(req.headers);
   const ipHash = hashIp(ip);
-  if (isRateLimited(ipHash)) {
+  if (await isRateLimited(ipHash)) {
     return NextResponse.json({ ok: false, reason: "rate_limited" }, { status: 429 });
   }
 
@@ -74,7 +74,6 @@ export async function POST(req: NextRequest) {
       lang,
       ipHash,
     });
-    recordSubmission(ipHash);
     return NextResponse.json({ ok: true, story }, { status: 201 });
   } catch (err) {
     console.error("[stories.POST]", err);
