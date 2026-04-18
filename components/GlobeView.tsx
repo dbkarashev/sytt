@@ -218,6 +218,81 @@ export default function GlobeView() {
     }, 6000);
   };
 
+  // Double-tap-and-drag zoom: mimic Google Maps on touch devices.
+  // Second tap within 320ms + drag Y → exponentially adjust altitude.
+  useEffect(() => {
+    if (!ready) return;
+    const g = globeRef.current;
+    if (!g) return;
+    const controls = g.controls();
+    const canvas = g.renderer().domElement;
+
+    const TAP_WINDOW_MS = 320;
+    const TAP_MAX_MOVE = 30;
+    const SENSITIVITY = 0.008;
+    const MIN_ALT = 0.6;
+    const MAX_ALT = 5.2;
+
+    let lastTap = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let dragging = false;
+    let startY = 0;
+    let startAlt = 0;
+
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const now = Date.now();
+      const dx = Math.abs(t.clientX - lastX);
+      const dy = Math.abs(t.clientY - lastY);
+      if (now - lastTap < TAP_WINDOW_MS && dx < TAP_MAX_MOVE && dy < TAP_MAX_MOVE) {
+        dragging = true;
+        startY = t.clientY;
+        startAlt = g.pointOfView().altitude ?? 2.4;
+        controls.enabled = false;
+        controls.autoRotate = false;
+        if (panResumeRef.current) clearTimeout(panResumeRef.current);
+        e.preventDefault();
+        lastTap = 0;
+        return;
+      }
+      lastTap = now;
+      lastX = t.clientX;
+      lastY = t.clientY;
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!dragging || e.touches.length !== 1) return;
+      const dy = e.touches[0].clientY - startY;
+      const alt = Math.max(MIN_ALT, Math.min(MAX_ALT, startAlt * Math.exp(-dy * SENSITIVITY)));
+      const pov = g.pointOfView();
+      g.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: alt }, 0);
+      e.preventDefault();
+    };
+
+    const onEnd = () => {
+      if (!dragging) return;
+      dragging = false;
+      controls.enabled = true;
+      panResumeRef.current = setTimeout(() => {
+        controls.autoRotate = true;
+      }, 3000);
+    };
+
+    canvas.addEventListener("touchstart", onStart, { passive: false });
+    canvas.addEventListener("touchmove", onMove, { passive: false });
+    canvas.addEventListener("touchend", onEnd);
+    canvas.addEventListener("touchcancel", onEnd);
+
+    return () => {
+      canvas.removeEventListener("touchstart", onStart);
+      canvas.removeEventListener("touchmove", onMove);
+      canvas.removeEventListener("touchend", onEnd);
+      canvas.removeEventListener("touchcancel", onEnd);
+    };
+  }, [ready]);
+
   return (
     <div className="relative h-full w-full">
       <div
