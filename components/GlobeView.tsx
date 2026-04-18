@@ -106,13 +106,20 @@ export default function GlobeView() {
     setStories((prev) => prev.map((s) => (s.id === story.id ? story : s)));
   };
 
+  const closeOverlays = () => {
+    setSelected(null);
+    setEditing(null);
+    setModalOpen(false);
+  };
+
   const handleSparkClick = (story: Story) => {
+    closeOverlays();
     if (mineIds.has(story.id)) {
       setEditing(story);
       setModalOpen(true);
-      return;
+    } else {
+      setSelected(story);
     }
-    setSelected(story);
   };
 
   const canNavigate = useMemo(
@@ -237,7 +244,7 @@ export default function GlobeView() {
           mineIds={mineIds}
           onSelect={handleSparkClick}
           onAddHere={() => {
-            setEditing(null);
+            closeOverlays();
             setModalOpen(true);
           }}
         />
@@ -254,7 +261,7 @@ export default function GlobeView() {
           <button
             type="button"
             onClick={() => {
-              setEditing(null);
+              closeOverlays();
               setModalOpen(true);
             }}
             aria-label={t.map.tellStory}
