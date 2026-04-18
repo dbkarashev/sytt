@@ -1,19 +1,43 @@
 # sytt
 
-Interactive 3D globe of anonymous stories from people going through hard times.
+An interactive 3D globe of anonymous stories from people going through hard times. Each story is a spark on the planet. Inside, a slow breathing fire core — 4 seconds in, 1 hold, 6 out.
 
-Source of truth for architecture and decisions: **[SPEC.md](SPEC.md)**.
+The name is shorthand for *"save yourself this time"*, a line from RAYE × Hans Zimmer. The project has one idea: nothing has to change tonight, you just have to stay.
 
-## Getting started
+Live: https://sytt.vercel.app
+
+## Stack
+
+Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS 4. Rendering uses `react-globe.gl` + `three` + `h3-js` — hex-dotted continents, a custom polar-cap layer that works around h3's pole limitation, a procedural shader fire inside the sphere, and sprite-based sparks with custom raycasting.
+
+Stories live in Supabase (PostgreSQL + REST, no SDK). Rate limiting uses Upstash Redis via the Vercel integration. Content moderation goes through Groq's Llama 3.3 70B with a crisis-aware prompt that allows expressions of pain and blocks attacks, threats and spam.
+
+## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in values
+cp .env.example .env.local   # fill in values
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+What breaks without what:
 
-## Supabase setup
+- No `SUPABASE_SECRET_KEY` — falls back to an in-memory store seeded with twelve sample stories. Fine for UI work.
+- No `GROQ_API_KEY` — moderation skips the LLM layer in dev; in production it fails closed (rejects).
+- No `KV_REST_API_URL` / `KV_REST_API_TOKEN` — rate limit uses an in-memory map in dev; in production it fails closed (returns 429).
 
-Run [supabase-setup.sql](supabase-setup.sql) once in the Supabase SQL Editor — table, indexes, RLS, 12 seed stories (idempotent).
+## Deploy
+
+`main` auto-deploys to production on Vercel. `dev` and any other branch get preview deploys on push. Branch protection on `main` requires a pull request; the workflow is:
+
+```bash
+git checkout dev
+# ...edit, commit...
+git push
+gh pr create --base main --head dev --fill
+gh pr merge --rebase    # linear history is enforced
+```
+
+## Architecture
+
+Module layout, data flow, moderation prompt design, globe internals, rate-limit semantics and every non-obvious decision live in [SPEC.md](SPEC.md). Read that before making structural changes.
