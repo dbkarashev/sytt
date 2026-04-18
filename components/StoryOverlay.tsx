@@ -180,7 +180,7 @@ export default function StoryOverlay({ story, onClose, onPrev, onNext }: Props) 
             e.stopPropagation();
             onPrev();
           }}
-          className="pointer-events-auto absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 text-[var(--color-ink-ghost)] opacity-50 transition-all hover:opacity-100 hover:text-[var(--color-warm-bright)] sm:flex"
+          className="pointer-events-auto absolute left-2 top-1/2 z-10 flex -translate-y-1/2 text-[var(--color-ink-ghost)] opacity-50 transition-all hover:opacity-100 hover:text-[var(--color-warm-bright)] sm:left-4"
           style={{ opacity: visible ? undefined : 0 }}
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
@@ -197,7 +197,7 @@ export default function StoryOverlay({ story, onClose, onPrev, onNext }: Props) 
             e.stopPropagation();
             onNext();
           }}
-          className="pointer-events-auto absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 text-[var(--color-ink-ghost)] opacity-50 transition-all hover:opacity-100 hover:text-[var(--color-warm-bright)] sm:flex"
+          className="pointer-events-auto absolute right-2 top-1/2 z-10 flex -translate-y-1/2 text-[var(--color-ink-ghost)] opacity-50 transition-all hover:opacity-100 hover:text-[var(--color-warm-bright)] sm:right-4"
           style={{ opacity: visible ? undefined : 0 }}
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden>
