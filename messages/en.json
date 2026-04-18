@@ -1,10 +1,7 @@
 {
   "map": {
-    "tellStory": "add yours",
-    "loading": "loading the map…",
     "breatheIn": "breathe in",
-    "breatheOut": "breathe out",
-    "hold": ""
+    "breatheOut": "breathe out"
   },
   "form": {
     "textPlaceholder": "what are you going through?",
@@ -13,7 +10,6 @@
     "submit": "share",
     "save": "save",
     "submitting": "checking…",
-    "cancel": "cancel",
     "success": "✦ your spark is on the map now.",
     "updateSuccess": "✦ updated.",
     "rejected": "we can't publish this exact wording. try rephrasing.",
