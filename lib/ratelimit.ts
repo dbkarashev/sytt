@@ -6,6 +6,13 @@ const MAX = 3;
 
 type Checker = (ipHash: string) => Promise<boolean>;
 
+function hasUpstashEnv(): boolean {
+  return Boolean(
+    (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) &&
+      (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN),
+  );
+}
+
 function createUpstashChecker(): Checker {
   const limiter = new Ratelimit({
     redis: Redis.fromEnv(),
@@ -36,15 +43,12 @@ let resolved = false;
 function resolveChecker(): Checker | null {
   if (resolved) return checker;
   resolved = true;
-  const hasUpstash = Boolean(
-    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
-  );
-  if (hasUpstash) {
+  if (hasUpstashEnv()) {
     checker = createUpstashChecker();
   } else if (process.env.NODE_ENV !== "production") {
     checker = createMemoryChecker();
   } else {
-    console.error("[ratelimit] prod without UPSTASH_REDIS_REST_* — failing closed");
+    console.error("[ratelimit] prod without Upstash env — failing closed");
     checker = null;
   }
   return checker;
