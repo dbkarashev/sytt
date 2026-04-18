@@ -1,4 +1,4 @@
-# Save Yourself / Сохрани себя
+# sytt
 
 Interactive 3D globe of anonymous stories from people going through hard times. Breathing rhythm 4-1-6. You don't have to win — you just have to get through this.
 

@@ -7,6 +7,6 @@ export function ipFromHeaders(headers: Headers): string {
 }
 
 export function hashIp(ip: string): string {
-  const salt = process.env.IP_SALT ?? "save-yourself-default-salt";
+  const salt = process.env.IP_SALT ?? "sytt-default-salt";
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
