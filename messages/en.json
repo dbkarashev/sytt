@@ -1,0 +1,34 @@
+{
+  "map": {
+    "tellStory": "add yours",
+    "loading": "loading the map…",
+    "breatheIn": "breathe in",
+    "breatheOut": "breathe out",
+    "hold": ""
+  },
+  "form": {
+    "textPlaceholder": "what are you going through?",
+    "feelingPlaceholder": "what are you feeling? tell a little more if you can.",
+    "copedPlaceholder": "if something started to help — come back and write what. even a tiny thing.",
+    "submit": "share",
+    "save": "save",
+    "submitting": "checking…",
+    "cancel": "cancel",
+    "success": "✦ your spark is on the map now.",
+    "updateSuccess": "✦ updated.",
+    "rejected": "we can't publish this exact wording. try rephrasing.",
+    "rateLimited": "you've shared recently. please wait a bit before sharing again.",
+    "forbidden": "this spark belongs to a different session. you can't edit it from here.",
+    "error": "something went wrong. please try again."
+  },
+  "manifesto": {
+    "body": [
+      "this is a map of everyone still holding on.",
+      "maybe you can't leave your room tonight. maybe you haven't spoken out loud in weeks. maybe you look fine and you're not.",
+      "you don't have to fix it tonight. you don't have to hold any shape. you just have to stay.",
+      "every spark here is someone else who stayed."
+    ],
+    "quote": "the cold never lasts, my darling. it just teaches the heart how to burn.",
+    "quoteSource": "raye — click clack symphony"
+  }
+}
