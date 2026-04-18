@@ -1,4 +1,4 @@
-# Save Yourself / Сохрани себя — актуальное ТЗ
+# sytt — актуальное ТЗ
 
 > Это пересборка оригинального ТЗ на **апрель 2026** с учётом того, что изменилось в реальности: мёртвые API, новые схемы ключей, актуальные библиотеки. Оригинальный ТЗ устарел в деталях (Perspective API, старые Supabase-ключи) — здесь источник истины. На него ссылайся в дальнейших сессиях.
 
@@ -125,8 +125,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 ### 5. UI overlay
 
 **Шапка** ([components/Header.tsx](components/Header.tsx)):
-- Слева: `save·yourself` курсивом
-- Справа: About
+- Слева: `save yourself this time` курсивом (тэглайн-лого, клик → ManifestoOverlay)
 
 **Низ экрана:**
 - Кнопка «✦ Tell your story» с `animate-breathing-glow`

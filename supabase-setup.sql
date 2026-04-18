@@ -1,4 +1,4 @@
--- Save Yourself — DB setup. Run once in Supabase SQL Editor.
+-- sytt — DB setup. Run once in Supabase SQL Editor.
 
 -- 1. Table
 create table if not exists public.stories (
