@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Lora, Nunito } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const lora = Lora({
@@ -65,7 +66,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${lora.variable} ${nunito.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
