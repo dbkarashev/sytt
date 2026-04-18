@@ -211,15 +211,12 @@ export default function StoryOverlay({ story, onClose, onPrev, onNext }: Props) 
           !fullyShown ? "cursor-pointer" : ""
         }`}
         onClick={(e) => {
+          e.stopPropagation();
           if (didSwipe.current) {
             didSwipe.current = false;
-            e.stopPropagation();
             return;
           }
-          if (!fullyShown) {
-            e.stopPropagation();
-            handleContentClick();
-          }
+          if (!fullyShown) handleContentClick();
         }}
         onPointerDown={(e) => {
           didSwipe.current = false;
