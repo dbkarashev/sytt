@@ -46,6 +46,12 @@ const Globe = forwardRef<GlobeMethods | undefined, Props>(function Globe({ onRea
 
   const methodsRef = useRef<GlobeMethods | undefined>(undefined);
 
+  useEffect(() => {
+    const methods = methodsRef.current;
+    if (typeof ref === "function") ref(methods);
+    else if (ref) ref.current = methods;
+  });
+
   const globeMaterial = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -186,11 +192,7 @@ const Globe = forwardRef<GlobeMethods | undefined, Props>(function Globe({ onRea
     <div ref={wrapRef} className="h-full w-full">
       {size.w > 0 && size.h > 0 && (
         <GlobeGL
-          ref={(m) => {
-            methodsRef.current = m ?? undefined;
-            if (typeof ref === "function") ref(m ?? undefined);
-            else if (ref) ref.current = m ?? undefined;
-          }}
+          ref={methodsRef}
           width={size.w}
           height={size.h}
           backgroundColor="rgba(0,0,0,0)"
@@ -199,7 +201,7 @@ const Globe = forwardRef<GlobeMethods | undefined, Props>(function Globe({ onRea
           showGraticules
           globeMaterial={globeMaterial}
           hexPolygonsData={hexLand}
-          hexPolygonGeoJsonGeometry={(d: Feature) => d.geometry as { type: string; coordinates: number[] }}
+          hexPolygonGeoJsonGeometry={(d: object) => (d as Feature).geometry as { type: string; coordinates: number[] }}
           hexPolygonResolution={4}
           hexPolygonMargin={0.3}
           hexPolygonUseDots
