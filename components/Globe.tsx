@@ -45,12 +45,25 @@ const Globe = forwardRef<GlobeMethods | undefined, Props>(function Globe({ onRea
   }, []);
 
   const methodsRef = useRef<GlobeMethods | undefined>(undefined);
+  const [sceneReady, setSceneReady] = useState(false);
 
   useEffect(() => {
     const methods = methodsRef.current;
     if (typeof ref === "function") ref(methods);
     else if (ref) ref.current = methods;
   });
+
+  useEffect(() => {
+    if (!sceneReady || land.length === 0) return;
+    let r2 = 0;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => onReady?.());
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      if (r2) cancelAnimationFrame(r2);
+    };
+  }, [sceneReady, land.length, onReady]);
 
   const globeMaterial = useMemo(
     () =>
@@ -185,7 +198,7 @@ const Globe = forwardRef<GlobeMethods | undefined, Props>(function Globe({ onRea
     });
 
     g.pointOfView({ lat: 20, lng: 0, altitude: 2.4 }, 0);
-    onReady?.();
+    setSceneReady(true);
   };
 
   return (
