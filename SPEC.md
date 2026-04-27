@@ -250,11 +250,9 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 
 **Слой 2 — Groq Llama 3.3 70B Versatile** с crisis-aware system prompt:
 
-Модель получает инструкцию:
-- **ALWAYS ALLOW**: боль, отчаяние, истощение, «I want to die» как описание состояния (не план), описания психических расстройств, потерь, одиночества
-- **BLOCK**: атаки/слурсы/угрозы **к другим людям**, призывы к насилию, явные инструкции self-harm (не «хочу», а «вот как»), спам/крипта/реклама, троллинг
+Модель различает выражение собственной боли (пропускается) и агрессию к другим, конкретные harm-инструкции, спам (блокируется). Точная формулировка системного промпта — в [lib/moderate.ts](lib/moderate.ts).
 
-Модель возвращает `{"allow": bool, "reason": "<tag>"}`.
+Возвращает `{"allow": bool, "reason": "<tag>"}`.
 
 Таймаут 6 секунд, `response_format: json_object`, `temperature: 0.1`. Код: [lib/moderate.ts](lib/moderate.ts).
 
