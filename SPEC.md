@@ -4,11 +4,7 @@
 
 Интерактивный 3D-глобус с анонимными историями людей, переживающих тяжёлые времена. Каждая история — точка-искра на планете. Внутри планеты — дышащее в ритме 4-1-6 свечение.
 
-Главная идея: **«Save yourself this time»**.
-
-UI только English.
-
-**Источник вдохновения:** песня RAYE × Hans Zimmer — *«Click Clack Symphony»* (2026, альбом «This Music May Contain Hope»). Название проекта — из строки «She will save herself this time». Центральная цитата показывается в ManifestoOverlay (открывается по клику на лого в шапке):
+**Источник вдохновения:** песня RAYE × Hans Zimmer — *«Click Clack Symphony»* (2026, альбом «This Music May Contain Hope»). Название проекта — из строки «She will save herself this time». Центральная цитата показывается в ManifestoOverlay открывается по клику на лого в шапке:
 
 > «The cold never lasts, my darling. It just teaches the heart how to burn.»
 
