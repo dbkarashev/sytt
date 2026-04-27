@@ -51,3 +51,7 @@ git reset --hard origin/main && git push --force-with-lease  # keep dev aligned
 ## Architecture
 
 Module layout, data flow, moderation prompt design, globe internals, rate-limit semantics and every non-obvious decision are in [SPEC.md](SPEC.md). Read that before making structural changes.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
