@@ -386,6 +386,8 @@ NEXT_PUBLIC_SITE_URL=https://sytt.vercel.app
 
 Проект задеплоен на Vercel, прод работает на `sytt.vercel.app`. Ветки: `main` — production (под branch protection, merge только через PR с rebase/linear history), `dev` — рабочая, preview-деплои на каждый push. Speed Insights подключены — данные по LCP/INP/CLS копятся.
 
+GitHub Actions воркфлоу [.github/workflows/keep-alive.yml](.github/workflows/keep-alive.yml) пингует `/api/stories` каждые 8 часов — чтобы Supabase free tier не уснул после 7 дней неактивности.
+
 Готовы и отлажены: глобус с огненным ядром, искры с кастомным raycasting'ом, StoryOverlay с typewriter-подачей и навигацией (клавиши/свайп/стрелки), AddStoryModal создания и редактирования, IP-геолокация через ipapi.co, crisis-aware модерация через Groq, Supabase-хранилище с новыми sb-ключами, Upstash Redis rate limit (3/час на IP-hash) с fail-closed в prod и in-memory fallback в dev.
 
 Актуальные ограничения:
