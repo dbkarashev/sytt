@@ -2,7 +2,7 @@
 
 ## Концепция
 
-Интерактивный 3D-глобус с анонимными историями людей, переживающих тяжёлые времена. Каждая история — точка-искра на планете. Внутри планеты — дышащее в ритме 4-1-6 свечение.
+Интерактивный 3D-глобус с анонимными историями людей, переживающих тяжелые времена. Каждая история — точка-искра на планете. Внутри планеты — дышащее в ритме 4-1-6 свечение.
 
 **Источник вдохновения:** песня RAYE × Hans Zimmer — *«Click Clack Symphony»* (2026, альбом «This Music May Contain Hope»). Название проекта — из строки «She will save herself this time». Центральная цитата показывается в ManifestoOverlay открывается по клику на лого в шапке:
 
@@ -39,13 +39,11 @@
 
 ### 1. Глобус (react-globe.gl + three.js scene injection)
 
-При открытии сайта человек сразу видит дышащую планету. Без intro, без заставки — в кризисе не до кинематографического вступления.
-
-Тёмный dotted globe на всю страницу. Реализация:
+Темный dotted globe на всю страницу. Реализация:
 
 - `hexPolygonsData` с `hexPolygonUseDots=true`, `hexPolygonResolution=4`, цвет точек `#6B8A9E`.
 - **Антарктика требует обхода**: h3 `polygonToCells` не умеет полигоны, пересекающие полюс. Antarctica из hex-слоя удалена (`hexLand = land.filter(f => NAME !== 'Antarctica')`). Вместо этого — `customLayerData` с `gridDisk(poleCell, 95)` + point-in-polygon по настоящему multiPolygon из GeoJSON. Материал `MeshLambertMaterial` — идентичный тому, что `three-globe` использует для hex dots, чтобы цвет совпадал под тем же освещением.
-- Полупрозрачный `globeMaterial` (`MeshBasicMaterial` color `#0a1322` opacity 0.35) — делает «внутренность» планеты приглушённой, чтобы свечение просвечивало сквозь hex-точки.
+- Полупрозрачный `globeMaterial` (`MeshBasicMaterial` color `#0a1322` opacity 0.35) — делает «внутренность» планеты приглушенной, чтобы свечение просвечивало сквозь hex-точки.
 - `showGraticules=true`, `showAtmosphere=false`.
 - Auto-rotate через `controls().autoRotateSpeed=0.24`. Сброс при drag, возврат через 5s.
 - Zoom limits: `minDistance=160`, `maxDistance=620`. Pinch и колесо через OrbitControls. Дополнительно на touch-устройствах реализован **double-tap-and-drag zoom** (поверх OrbitControls, экспоненциальная чувствительность) — см. `useEffect` в [components/GlobeView.tsx](components/GlobeView.tsx).
@@ -69,7 +67,7 @@
 - Fragment: радиальный градиент `hot → cool`, fade в начале и в конце жизни
 - Сильно приглушены (`vAlpha * 0.08`) чтобы не пересветить scene
 
-**Ритм 4-1-6**: всё управляется из [lib/breathing.ts](lib/breathing.ts):
+**Ритм 4-1-6**: все управляется из [lib/breathing.ts](lib/breathing.ts):
 - `BREATH.inhaleMs = 4000`
 - `BREATH.holdMs = 1000`
 - `BREATH.exhaleMs = 6000`
@@ -82,7 +80,7 @@
 Компонент [components/StorySparks.tsx](components/StorySparks.tsx). Вставляется в scene как `THREE.Group` со `Sprite`-ами.
 
 - Каждая история — `THREE.Sprite` с canvas-текстурой (radial gradient)
-- Цвет зависит от `story.coped`: warm `#FFB060` если есть coped, dim `#FF9050` если ещё в темноте
+- Цвет зависит от `story.coped`: warm `#FFB060` если есть coped, dim `#FF9050` если еще в темноте
 - Положение: конвертация lat/lng в 3D через `react-globe.gl`-совместимую формулу (x=cos(lat)sin(lng), y=sin(lat), z=cos(lat)cos(lng)) на радиусе `globeR + 0.8`
 - Flicker через сумму двух синусов с фазовым offset'ом (псевдослучайный phase для каждой искры)
 - Pulse по `breathAmount`
@@ -104,7 +102,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 
 Компонент [components/StoryOverlay.tsx](components/StoryOverlay.tsx). Fade-in/out 500мс, bottomsheet на мобильных (`items-end`). Закрытие — **только** ESC, backdrop-click и кнопка × (44×44 tappable-зона для iOS). Клик по самому тексту истории намеренно не закрывает: либо раскрывает набор (во время typewriter), либо ничего не делает.
 
-Текст истории, feeling и coped печатаются посимвольно в типографском темпе (base delay 32мс + пунктуация задерживает курсор). Клик по истории во время набора раскрывает её целиком сразу.
+Текст истории, feeling и coped печатаются посимвольно в типографском темпе (base delay 32мс + пунктуация задерживает курсор). Клик по истории во время набора раскрывает ее целиком сразу.
 
 Навигация между историями: стрелки по бокам (слева/справа, видны всегда, включая mobile), `ArrowLeft`/`ArrowRight` с клавиатуры, горизонтальный свайп на мобильных. Навигация выбирает следующую/предыдущую соседнюю историю в ту же сторону по проекции на 2D (не по id). Если расстояние > 500 км — глобус плавно панорамирует на новую точку. Клик на свою/чужую точку пока открыт другой overlay — корректно закрывает предыдущий (см. `closeOverlays()` в GlobeView).
 
@@ -128,7 +126,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 | Что чувствуешь (feeling) | textarea | Нет | до 300 |
 | Что помогает (coped) | textarea | Нет | до 300. Только при редактировании своей истории — на создании не принимается, добавляется PATCH'ем позже |
 
-Язык не выбирается — форма всегда шлёт `lang: "en"`. БД-тип `Lang = "en" \| "ru"`, где `"ru"` покрывает только чтение legacy-записей с русским текстом.
+Язык не выбирается — форма всегда шлет `lang: "en"`. БД-тип `Lang = "en" \| "ru"`, где `"ru"` покрывает только чтение legacy-записей с русским текстом.
 
 **Координаты не вводятся вообще.** Сервер определяет по IP через `ipapi.co` (см. `lib/geolocate.ts`), округляет до 0.1°. При неудаче: dev → fallback Moscow `(55.8, 37.6)`, prod → 500 error.
 
@@ -165,7 +163,7 @@ Hit → `onSelect(story)` → StoryOverlay.
 
 ### Дыхание UI (ритм 4-1-6)
 
-Всё живое в интерфейсе дышит одним ритмом:
+Все живое в интерфейсе дышит одним ритмом:
 - Shader fire внутри планеты
 - Искры-истории (scale + opacity)
 - `animate-breathing` для pulse (opacity 0.55 → 1 → 0.55)
@@ -173,13 +171,13 @@ Hit → `onSelect(story)` → StoryOverlay.
 - BreathIndicator (текст фазы)
 - Fade попапов — 500мс (дыхательный темп)
 
-Резких анимаций нет. Всё медленнее обычного.
+Резких анимаций нет. Все медленнее обычного.
 
 ---
 
 ## База данных (Supabase)
 
-SQL-скрипт сохранён в [supabase-setup.sql](supabase-setup.sql). Выполнить в Supabase SQL Editor.
+SQL-скрипт сохранен в [supabase-setup.sql](supabase-setup.sql). Выполнить в Supabase SQL Editor.
 
 ```sql
 create table if not exists public.stories (
@@ -203,7 +201,7 @@ create policy "Anyone can read stories" on public.stories for select using (true
 -- INSERT/UPDATE только через server API с secret key, никаких write-policy.
 ```
 
-Seed 12 начальных историй включён в тот же SQL-файл (идемпотентно).
+Seed 12 начальных историй включен в тот же SQL-файл (идемпотентно).
 
 **Схема ключей Supabase:**
 - `sb_publishable_…` → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (в коде не используется, зарезервировано под клиентскую читалку)
@@ -290,7 +288,7 @@ UI только English. Копирайт лежит в [messages/en.json](messa
 
 - Title и description в `app/layout.tsx` (EN)
 - OG-image динамическая: [app/opengraph-image.tsx](app/opengraph-image.tsx) (1200x630, gradient + искры + *«save yourself this time.»* курсивом)
-- Favicon: [public/favicon.svg](public/favicon.svg) — тёплый огонёк на `#070b14`
+- Favicon: [public/favicon.svg](public/favicon.svg) — теплый огонек на `#070b14`
 
 ---
 
@@ -377,12 +375,12 @@ GitHub Actions воркфлоу [.github/workflows/keep-alive.yml](.github/workf
 Готовы и отлажены: глобус с огненным ядром, искры с кастомным raycasting'ом, StoryOverlay с typewriter-подачей и навигацией (клавиши/свайп/стрелки), AddStoryModal создания и редактирования, IP-геолокация через ipapi.co, crisis-aware модерация через Groq, Supabase-хранилище с новыми sb-ключами, Upstash Redis rate limit (3/час на IP-hash) с fail-closed в prod и in-memory fallback в dev.
 
 Актуальные ограничения:
-- Нет мониторинга ошибок. Sentry или аналог можно добавить перед серьёзным трафиком.
+- Нет мониторинга ошибок. Sentry или аналог можно добавить перед серьезным трафиком.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` лежит в env, но код его не использует (все серверные запросы через secret key). Можно не выставлять — оставлен как задел если появится клиентская читалка.
 
 ---
 
-## Вне объёма проекта
+## Вне объема проекта
 
 - Авторизация, аккаунты
 - Комментарии к историям
