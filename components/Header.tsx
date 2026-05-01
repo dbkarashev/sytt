@@ -16,7 +16,7 @@ export default function Header() {
         >
           save yourself this time
         </button>
-        <span className="flex items-center gap-2 font-serif text-[11px] italic tracking-[0.04em] text-[var(--color-ink-ghost)]">
+        <span className="flex items-center gap-2 font-serif text-[11px] tracking-[0.04em] text-[var(--color-ink-ghost)]">
           made by
           <a
             href="https://dbkarashev.com"
@@ -25,7 +25,7 @@ export default function Header() {
             aria-label="dbkarashev.com"
             className="pointer-events-auto inline-flex items-center opacity-80 transition-opacity hover:opacity-100"
           >
-            <img src="/dbkarashev.svg" alt="dbkarashev" className="h-4 w-auto" />
+            <img src="/dbkarashev.svg" alt="dbkarashev" className="h-6 w-auto" />
           </a>
         </span>
       </header>
