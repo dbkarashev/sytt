@@ -163,16 +163,7 @@ export default function StoryOverlay({ story, onClose, onPrev, onNext }: Props) 
         }}
       />
 
-      <button
-        type="button"
-        aria-label="close"
-        onClick={onClose}
-        className="pointer-events-auto absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center text-xl text-[var(--color-ink-ghost)] transition-colors hover:text-[var(--color-ink)]"
-      >
-        ×
-      </button>
-
-      {onPrev && (
+{onPrev && (
         <button
           type="button"
           aria-label="previous story"

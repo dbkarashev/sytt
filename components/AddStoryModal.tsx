@@ -159,16 +159,7 @@ export default function AddStoryModal({
           transition: `opacity ${FADE_MS}ms ease, transform ${FADE_MS}ms ease`,
         }}
       >
-        <button
-          onClick={onClose}
-          type="button"
-          aria-label="close"
-          className="absolute right-5 top-4 text-lg text-[var(--color-ink-ghost)] transition-colors hover:text-[var(--color-ink)]"
-        >
-          ×
-        </button>
-
-        {submit.status === "success" ? (
+{submit.status === "success" ? (
           <p className="py-8 text-center font-serif text-[17px] italic text-[var(--color-warm-bright)]">
             {isEdit ? t.form.updateSuccess : t.form.success}
           </p>

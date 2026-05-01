@@ -329,17 +329,37 @@ export default function GlobeView() {
         onNext={canNavigate ? () => navigateStory(1) : undefined}
       />
 
-      <div className="pointer-events-none absolute right-5 top-4 z-[600] flex items-center gap-2 md:right-7 md:top-5">
-        {ready && <BreathIndicator />}
-        <a
-          href="https://dbkarashev.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="dbkarashev.com"
-          className="pointer-events-auto inline-flex items-center opacity-80 transition-opacity hover:opacity-100"
-        >
-          <img src="/dbkarashev.svg" alt="dbkarashev" className="h-6 w-auto" />
-        </a>
+      <div className="pointer-events-none absolute right-5 top-4 z-[7600] flex items-center gap-2 md:right-7 md:top-5">
+        {selected || modalOpen ? (
+          <button
+            type="button"
+            onClick={closeOverlays}
+            aria-label="close"
+            className="pointer-events-auto flex h-6 w-6 items-center justify-center text-[var(--color-ink-ghost)] transition-colors hover:text-[var(--color-ink)]"
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        ) : (
+          <>
+            {ready && <BreathIndicator />}
+            <a
+              href="https://dbkarashev.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="dbkarashev.com"
+              className="pointer-events-auto inline-flex items-center opacity-80 transition-opacity hover:opacity-100"
+            >
+              <img src="/dbkarashev.svg" alt="dbkarashev" className="h-6 w-auto" />
+            </a>
+          </>
+        )}
       </div>
 
       <div
