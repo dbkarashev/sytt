@@ -339,7 +339,7 @@ export default function GlobeView() {
         aria-hidden
         className="pointer-events-none absolute bottom-6 left-6 z-[500] font-serif text-[11px] tracking-[0.04em] text-[var(--color-ink-ghost)]"
       >
-        © 2026 Damir Karashev
+        © 2026 damir karashev
       </div>
 
       {me && (
