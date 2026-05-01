@@ -335,6 +335,13 @@ export default function GlobeView() {
         </div>
       )}
 
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-6 left-6 z-[500] font-serif text-[11px] tracking-[0.04em] text-[var(--color-ink-ghost)]"
+      >
+        © 2026 Damir Karashev
+      </div>
+
       {me && (
         <button
           type="button"
