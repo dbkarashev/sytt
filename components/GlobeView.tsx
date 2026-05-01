@@ -329,11 +329,18 @@ export default function GlobeView() {
         onNext={canNavigate ? () => navigateStory(1) : undefined}
       />
 
-      {ready && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-8 z-[500] flex justify-center">
-          <BreathIndicator />
-        </div>
-      )}
+      <div className="pointer-events-none absolute right-5 top-4 z-[600] flex items-center gap-3 md:right-7 md:top-5">
+        {ready && <BreathIndicator />}
+        <a
+          href="https://dbkarashev.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="dbkarashev.com"
+          className="pointer-events-auto inline-flex items-center opacity-80 transition-opacity hover:opacity-100"
+        >
+          <img src="/dbkarashev.svg" alt="dbkarashev" className="h-6 w-auto" />
+        </a>
+      </div>
 
       <div
         aria-hidden
