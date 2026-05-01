@@ -54,7 +54,7 @@ export default function BreathIndicator() {
     <div
       ref={wrapRef}
       aria-hidden
-      className="relative flex h-5 w-40 items-center justify-center font-serif text-[11px] text-[var(--color-ink-ghost)] will-change-transform"
+      className="relative flex h-5 w-24 items-center justify-end font-serif text-[11px] text-[var(--color-ink-ghost)] will-change-transform"
     >
       <span ref={inhaleRef} className="absolute" style={{ opacity: 0 }}>
         {t.map.breatheIn}

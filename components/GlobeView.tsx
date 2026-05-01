@@ -329,7 +329,7 @@ export default function GlobeView() {
         onNext={canNavigate ? () => navigateStory(1) : undefined}
       />
 
-      <div className="pointer-events-none absolute right-5 top-4 z-[600] flex items-center gap-3 md:right-7 md:top-5">
+      <div className="pointer-events-none absolute right-5 top-4 z-[600] flex items-center gap-2 md:right-7 md:top-5">
         {ready && <BreathIndicator />}
         <a
           href="https://dbkarashev.com"
@@ -353,19 +353,9 @@ export default function GlobeView() {
         <button
           type="button"
           onClick={focusMe}
-          aria-label="find me"
-          className="pointer-events-auto absolute bottom-6 right-6 z-[600] flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[rgba(15,26,43,0.7)] text-[var(--color-ink-soft)] backdrop-blur-md transition-colors hover:border-[rgba(201,147,90,0.7)] hover:text-[var(--color-warm-bright)]"
+          className="pointer-events-auto absolute bottom-6 right-6 z-[600] font-serif text-[11px] tracking-[0.04em] text-[var(--color-ink-ghost)] transition-colors hover:text-[var(--color-ink-soft)]"
         >
-          <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
-            <circle cx="12" cy="12" r="2.5" fill="currentColor" />
-            <circle cx="12" cy="12" r="6.5" stroke="currentColor" strokeWidth="1.3" />
-            <path
-              d="M12 2v3M12 19v3M2 12h3M19 12h3"
-              stroke="currentColor"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-            />
-          </svg>
+          where am i?
         </button>
       )}
 
