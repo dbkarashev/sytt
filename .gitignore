@@ -43,5 +43,6 @@ next-env.d.ts
 
 # local AI tooling (Claude Code, Cursor, etc.)
 .claude/
+.playwright-mcp/
 AGENTS.md
 CLAUDE.md
