@@ -32,6 +32,7 @@
 - `/api/stories` — GET all / POST create
 - `/api/stories/[id]` — PATCH для редактирования своей истории (owner-check по `ip_hash`)
 - `/api/me` — GET текущих координат по IP (для preview-искры на глобусе)
+- `/api/keepalive` — GET, только для Vercel Cron: пинг Supabase и Upstash
 
 ---
 
@@ -219,6 +220,7 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 | POST | `/api/stories` | Создать: `{text, feeling, lang}`. Координаты сервер считает по IP. Coped добавляется позже через PATCH |
 | PATCH | `/api/stories/[id]` | Редактировать свою историю. Owner-check по `ip_hash` записи |
 | GET | `/api/me` | Координаты клиента по его IP (для preview-искры на карте) |
+| GET | `/api/keepalive` | Для Vercel Cron: читает Supabase, пишет `sytt:keepalive` в Upstash. `{supabase, redis}` со статусами, 500 если что-то упало |
 
 ---
 
@@ -260,7 +262,7 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 
 - Env: `KV_REST_API_URL` / `KV_REST_API_TOKEN`. `Redis.fromEnv()` читает их через встроенный fallback с `UPSTASH_REDIS_REST_*`. Vercel Storage integration проставляет сам — Custom Prefix оставлять пустым. Для локалки — скопировать эти две переменные из Vercel.
 - Counter увеличивается на **каждую попытку**, не только на успешный insert. Это осознанно: иначе спамер мог бы бесконечно жечь Groq-запросы через moderation-rejects без последствий. В crisis-контексте Groq-промпт настроен пропускать боль, так что для легитимного пользователя 3 rejects подряд крайне маловероятны.
-- Prefix ключей: `sytt:rl:*`. `analytics: true` — rate-limit события видны в UI Upstash.
+- Prefix ключей: `sytt:rl:*` (плюс `sytt:keepalive` от крона). `analytics: true` — rate-limit события видны в UI Upstash.
 - **Fail-closed в prod**: отсутствие env / сбой Redis → 429.
 - **Dev fallback**: без env → in-memory sliding window (симметрично с Supabase/Groq).
 
@@ -300,6 +302,7 @@ UI только English. Копирайт лежит в [messages/en.json](messa
   /api/stories/route.ts      GET/POST
   /api/stories/[id]/route.ts PATCH своей истории
   /api/me/route.ts           GET координат клиента по IP
+  /api/keepalive/route.ts    GET для Vercel Cron — пинг Supabase и Upstash
   /layout.tsx                шрифты, metadata, theme-color
   /opengraph-image.tsx       динамический OG
   /favicon.ico               ICO-fallback favicon (из public/favicon.svg)
@@ -370,7 +373,7 @@ NEXT_PUBLIC_SITE_URL=https://sytt.vercel.app
 
 Проект задеплоен на Vercel, прод работает на `sytt.vercel.app`. Ветки: `main` — production (под branch protection, merge только через PR с rebase/linear history), `dev` — рабочая, preview-деплои на каждый push. Speed Insights подключены — данные по LCP/INP/CLS копятся.
 
-Vercel Cron ([vercel.json](vercel.json)) пингует `/api/stories` раз в сутки — чтобы Supabase free tier не уснул после 7 дней неактивности. Крон запускается только на production-деплое, на preview не работает.
+Vercel Cron ([vercel.json](vercel.json)) раз в сутки дёргает `/api/keepalive`, который читает Supabase и пишет ключ `sytt:keepalive` в Upstash — чтобы ни один из free tier не заснул от неактивности (Supabase паузится через 7 дней; Upstash архивирует базу, а Redis иначе получает трафик только на POST). Крон запускается только на production-деплое, на preview не работает.
 
 Готовы и отлажены: глобус с огненным ядром, искры с кастомным raycasting'ом, StoryOverlay с typewriter-подачей и навигацией (клавиши/свайп/стрелки), AddStoryModal создания и редактирования, IP-геолокация через ipapi.co, crisis-aware модерация через Groq, Supabase-хранилище с новыми sb-ключами, Upstash Redis rate limit (3/час на IP-hash) с fail-closed в prod и in-memory fallback в dev.
 
