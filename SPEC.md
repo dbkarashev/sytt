@@ -288,7 +288,7 @@ UI только English. Копирайт лежит в [messages/en.json](messa
 
 - Title и description в `app/layout.tsx` (EN)
 - OG-image динамическая: [app/opengraph-image.tsx](app/opengraph-image.tsx) (1200x630, gradient + искры + *«save yourself this time.»* курсивом)
-- Favicon: [public/favicon.svg](public/favicon.svg) — теплый огонек на `#070b14`
+- Favicon: [public/favicon.svg](public/favicon.svg) — глобус (круг, меридиан, экватор) без подложки, цвет штриха переключается через `prefers-color-scheme` внутри SVG; [app/favicon.ico](app/favicon.ico) — растровый fallback 48/32/16 в фиксированном `#a0a0a0`, отрендерен из SVG в Chromium
 
 ---
 
@@ -302,6 +302,7 @@ UI только English. Копирайт лежит в [messages/en.json](messa
   /api/me/route.ts           GET координат клиента по IP
   /layout.tsx                шрифты, metadata, theme-color
   /opengraph-image.tsx       динамический OG
+  /favicon.ico               ICO-fallback favicon (из public/favicon.svg)
   /globals.css               @theme + breathing keyframes + html fix для iOS
 
 /components
@@ -335,7 +336,6 @@ UI только English. Копирайт лежит в [messages/en.json](messa
 /public
   /countries.geojson         Natural Earth 110m
   /favicon.svg
-  /favicon.ico
 
 supabase-setup.sql           SQL для инициализации БД
 ```
