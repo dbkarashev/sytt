@@ -43,3 +43,54 @@ select * from (values
   (1.3,   103.8, 'en', 'Everyone sees my success. Nobody sees my panic attacks at 3am.', 'Finally told one friend. Just one. It changed everything.')
 ) as seed(lat, lng, lang, text, coped)
 where not exists (select 1 from public.stories);
+
+-- 5. Rate limit: N submission attempts per window per IP hash, checked BEFORE
+--    moderation (lib/ratelimit.ts calls this over PostgREST RPC with the secret key).
+create table if not exists public.rate_limit_hits (
+  id bigint generated always as identity primary key,
+  ip_hash varchar(64) not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_rate_limit_hits_ip_created
+  on public.rate_limit_hits (ip_hash, created_at desc);
+
+-- RLS on with no policies: nothing is readable or writable with the publishable key.
+alter table public.rate_limit_hits enable row level security;
+
+-- Returns true when the hash is over the limit. The attempt is recorded only
+-- when it is let through, so a blocked client is not extended forever.
+-- The advisory lock serialises concurrent attempts from the same hash.
+create or replace function public.rate_limit_hit(
+  p_ip_hash text,
+  p_max int,
+  p_window_seconds int
+) returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  since timestamptz := now() - make_interval(secs => p_window_seconds);
+  n int;
+begin
+  perform pg_advisory_xact_lock(hashtext(p_ip_hash));
+
+  -- Opportunistic cleanup; keeps the table a handful of rows large.
+  delete from rate_limit_hits where created_at < now() - interval '1 day';
+
+  select count(*) into n
+    from rate_limit_hits
+   where ip_hash = p_ip_hash and created_at >= since;
+
+  if n >= p_max then
+    return true;
+  end if;
+
+  insert into rate_limit_hits (ip_hash) values (p_ip_hash);
+  return false;
+end;
+$$;
+
+-- Only the secret key (service_role) may call it.
+revoke execute on function public.rate_limit_hit(text, int, int) from public, anon, authenticated;

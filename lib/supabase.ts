@@ -143,4 +143,17 @@ export async function updateStory(input: {
   return rowToStory(rows[0]);
 }
 
+// Rate limit check via the rate_limit_hit Postgres function (supabase-setup.sql).
+// True when the hash is over the limit; a let-through attempt is recorded there.
+export async function hitRateLimit(
+  ipHash: string,
+  max: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  return rest<boolean>("rpc/rate_limit_hit", {
+    method: "POST",
+    body: JSON.stringify({ p_ip_hash: ipHash, p_max: max, p_window_seconds: windowSeconds }),
+  });
+}
+
 export const supabaseLive = isLive;

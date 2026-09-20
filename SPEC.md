@@ -17,9 +17,8 @@
 - **TypeScript 5**, **Tailwind CSS 4** (`@theme` block, `@import "tailwindcss"`)
 - **three** + **react-globe.gl 2.37** (wraps `three-globe` + `three`)
 - **h3-js 4.4** для hex-cells (включая ручное покрытие Антарктики — см. ниже)
-- **Supabase** (PostgreSQL + REST) с новой схемой ключей (`sb_publishable_…` / `sb_secret_…`)
+- **Supabase** (PostgreSQL + REST) с новой схемой ключей (`sb_publishable_…` / `sb_secret_…`) — хранилище и rate limit
 - **Groq API** (Llama 3.3 70B Versatile) — модерация
-- **Upstash Redis** (через Vercel Marketplace) + **`@upstash/ratelimit`** — rate limit
 - **Vercel** — деплой (free tier) + **`@vercel/speed-insights`** для real-user Core Web Vitals
 
 Ключевые breaking changes в Next.js 16 vs ранних версий описаны в `node_modules/next/dist/docs/` — читать перед правками.
@@ -32,7 +31,7 @@
 - `/api/stories` — GET all / POST create
 - `/api/stories/[id]` — PATCH для редактирования своей истории (owner-check по `ip_hash`)
 - `/api/me` — GET текущих координат по IP (для preview-искры на глобусе)
-- `/api/keepalive` — GET, только для Vercel Cron: пинг Supabase и Upstash
+- `/api/keepalive` — GET, только для Vercel Cron: пинг Supabase
 
 ---
 
@@ -220,7 +219,7 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 | POST | `/api/stories` | Создать: `{text, feeling, lang}`. Координаты сервер считает по IP. Coped добавляется позже через PATCH |
 | PATCH | `/api/stories/[id]` | Редактировать свою историю. Owner-check по `ip_hash` записи |
 | GET | `/api/me` | Координаты клиента по его IP (для preview-искры на карте) |
-| GET | `/api/keepalive` | Для Vercel Cron: читает Supabase, пишет `sytt:keepalive` в Upstash. `{supabase, redis}` со статусами, 500 если что-то упало |
+| GET | `/api/keepalive` | Для Vercel Cron: читает Supabase. `{supabase: "ok"}`, 500 если запрос упал |
 
 ---
 
@@ -258,15 +257,15 @@ Fallback на in-memory `globalThis` store в dev без env — см. [lib/stor
 
 ## Rate limiting
 
-**Prod: Upstash Redis через Vercel Marketplace.** `@upstash/ratelimit` sliding window — 3 submissions / 1h per IP hash. Код: [lib/ratelimit.ts](lib/ratelimit.ts).
+**Prod: Postgres-функция в Supabase.** 3 submissions / 1h per IP hash. Код: [lib/ratelimit.ts](lib/ratelimit.ts), SQL: [supabase-setup.sql](supabase-setup.sql), раздел 5.
 
-- Env: `KV_REST_API_URL` / `KV_REST_API_TOKEN`. `Redis.fromEnv()` читает их через встроенный fallback с `UPSTASH_REDIS_REST_*`. Vercel Storage integration проставляет сам — Custom Prefix оставлять пустым. Для локалки — скопировать эти две переменные из Vercel.
-- Counter увеличивается на **каждую попытку**, не только на успешный insert. Это осознанно: иначе спамер мог бы бесконечно жечь Groq-запросы через moderation-rejects без последствий. В crisis-контексте Groq-промпт настроен пропускать боль, так что для легитимного пользователя 3 rejects подряд крайне маловероятны.
-- Prefix ключей: `sytt:rl:*` (плюс `sytt:keepalive` от крона). `analytics: true` — rate-limit события видны в UI Upstash.
-- **Fail-closed в prod**: отсутствие env / сбой Redis → 429.
-- **Dev fallback**: без env → in-memory sliding window (симметрично с Supabase/Groq).
+- `POST /api/stories` до модерации делает один RPC-вызов `rate_limit_hit(ip_hash, max, window_seconds)` через PostgREST с secret key. Функция под advisory lock по хэшу считает попытки за окно в таблице `rate_limit_hits`; если лимит не исчерпан — записывает попытку и возвращает `false`, иначе `true` без записи. Заодно удаляет строки старше суток.
+- Попытка засчитывается **до** модерации, а не после insert'а. Это осознанно: иначе спамер мог бы бесконечно жечь Groq-запросы через moderation-rejects без последствий. В crisis-контексте Groq-промпт настроен пропускать боль, так что для легитимного пользователя 3 rejects подряд крайне маловероятны.
+- Таблица под RLS без политик, с функции снят `execute` для `anon` и `authenticated` — publishable key к лимиту не подступится.
+- **Fail-closed в prod**: отсутствие Supabase env / сбой RPC → 429.
+- **Dev fallback**: без env → in-memory sliding window (симметрично с хранилищем и Groq).
 
-Почему не Supabase-таблица: проверка ПОСЛЕ insert'а не работает — модерация уже сожгла Groq-запрос до того, как unique-constraint сработал бы. Upstash — чекер ДО moderation.
+Отдельного сервиса под rate limit нет намеренно: ещё один бесплатный внешний сервис — это ещё одна точка отказа, которую надо не дать заснуть, а при его пропаже прод из-за fail-closed молча отвечал бы 429 на все отправки. Каждая проверка лимита к тому же — ещё один запрос к базе, который Supabase засчитывает как активность.
 
 ---
 
@@ -302,7 +301,7 @@ UI только English. Копирайт лежит в [messages/en.json](messa
   /api/stories/route.ts      GET/POST
   /api/stories/[id]/route.ts PATCH своей истории
   /api/me/route.ts           GET координат клиента по IP
-  /api/keepalive/route.ts    GET для Vercel Cron — пинг Supabase и Upstash
+  /api/keepalive/route.ts    GET для Vercel Cron — пинг Supabase
   /layout.tsx                шрифты, metadata, theme-color
   /opengraph-image.tsx       динамический OG
   /favicon.ico               ICO-fallback favicon (из public/favicon.svg)
@@ -326,7 +325,7 @@ UI только English. Копирайт лежит в [messages/en.json](messa
   /i18n.ts                   статический EN bundle
   /ip.ts                     IP из headers + hash
   /moderate.ts               Regex + Groq
-  /ratelimit.ts              Upstash Redis sliding window + in-memory fallback
+  /ratelimit.ts              RPC в Postgres-функцию + in-memory fallback
   /seed.ts                   12 историй (fallback, если Supabase не сконфигурирован)
   /store.ts                  in-memory fallback для историй (dev-only)
   /stopwords/en.ts
@@ -356,10 +355,6 @@ SUPABASE_SECRET_KEY=sb_secret_...
 # Groq — модерация через Llama 3.3 70B
 GROQ_API_KEY=gsk_...
 
-# Upstash Redis — rate limit (Vercel Storage integration проставляет сам)
-KV_REST_API_URL=https://xxx.upstash.io
-KV_REST_API_TOKEN=...
-
 # Salt для SHA-256 IP-hash
 IP_SALT=случайная-hex-строка
 
@@ -373,9 +368,9 @@ NEXT_PUBLIC_SITE_URL=https://sytt.vercel.app
 
 Проект задеплоен на Vercel, прод работает на `sytt.vercel.app`. Ветки: `main` — production (под branch protection, merge только через PR с rebase/linear history), `dev` — рабочая, preview-деплои на каждый push. Speed Insights подключены — данные по LCP/INP/CLS копятся.
 
-Vercel Cron ([vercel.json](vercel.json)) шесть раз в сутки (каждые 4 часа) дёргает `/api/keepalive`, который читает Supabase и пишет ключ `sytt:keepalive` в Upstash — чтобы ни один из free tier не заснул от неактивности. Supabase паузит free-проект, если за неделю не набирается «нескольких запросов к базе в день»; одного пинга в сутки ему не хватает. Hobby-план Vercel разрешает одному cron-выражению срабатывать не чаще раза в день, поэтому в `vercel.json` шесть записей с разными часами. Роут объявлен `force-dynamic`, чтобы запрос не оседал в ISR-кэше и каждый вызов реально доходил до базы (у `/api/stories` стоит `revalidate = 60`, поэтому пинговать его ненадёжно). Крон запускается только на production-деплое, на preview не работает.
+Vercel Cron ([vercel.json](vercel.json)) шесть раз в сутки (каждые 4 часа) дёргает `/api/keepalive`, который читает Supabase — чтобы free tier не заснул от неактивности. Supabase паузит free-проект, если за неделю не набирается «нескольких запросов к базе в день»; одного пинга в сутки ему не хватает. Hobby-план Vercel разрешает одному cron-выражению срабатывать не чаще раза в день, поэтому в `vercel.json` шесть записей с разными часами. Роут объявлен `force-dynamic`, чтобы запрос не оседал в ISR-кэше и каждый вызов реально доходил до базы (у `/api/stories` стоит `revalidate = 60`, поэтому пинговать его ненадёжно). Крон запускается только на production-деплое, на preview не работает.
 
-Готовы и отлажены: глобус с огненным ядром, искры с кастомным raycasting'ом, StoryOverlay с typewriter-подачей и навигацией (клавиши/свайп/стрелки), AddStoryModal создания и редактирования, IP-геолокация через ipapi.co, crisis-aware модерация через Groq, Supabase-хранилище с новыми sb-ключами, Upstash Redis rate limit (3/час на IP-hash) с fail-closed в prod и in-memory fallback в dev.
+Готовы и отлажены: глобус с огненным ядром, искры с кастомным raycasting'ом, StoryOverlay с typewriter-подачей и навигацией (клавиши/свайп/стрелки), AddStoryModal создания и редактирования, IP-геолокация через ipapi.co, crisis-aware модерация через Groq, Supabase-хранилище с новыми sb-ключами, rate limit в Postgres-функции (3/час на IP-hash) с fail-closed в prod и in-memory fallback в dev.
 
 Актуальные ограничения:
 - Нет мониторинга ошибок. Sentry или аналог можно добавить перед серьезным трафиком.
