@@ -12,13 +12,12 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Fill in the copied `.env.local` before running if you want live Supabase/Groq/Upstash; otherwise the app falls back as described below.
+Fill in the copied `.env.local` before running if you want live Supabase/Groq; otherwise the app falls back as described below.
 
 Dev works with any subset of env vars. Behaviour when each is missing:
 
-- `SUPABASE_SECRET_KEY` — falls back to an in-memory store seeded with twelve sample stories.
+- `SUPABASE_SECRET_KEY` — falls back to an in-memory store seeded with twelve sample stories; rate limiting uses an in-memory map. Production fails closed (429).
 - `GROQ_API_KEY` — moderation skips the LLM layer in dev. Production fails closed.
-- `KV_REST_API_URL` / `KV_REST_API_TOKEN` — rate limit uses an in-memory map in dev. Production fails closed (429).
 
 ## Stack
 
@@ -28,13 +27,12 @@ Dev works with any subset of env vars. Behaviour when each is missing:
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06b6d4?logo=tailwindcss&logoColor=white&style=flat-square)](https://tailwindcss.com)
 [![Three.js](https://img.shields.io/badge/Three.js-000000?logo=threedotjs&logoColor=white&style=flat-square)](https://threejs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-3fcf8e?logo=supabase&logoColor=white&style=flat-square)](https://supabase.com)
-[![Upstash](https://img.shields.io/badge/Upstash-00e9a3?logo=upstash&logoColor=white&style=flat-square)](https://upstash.com)
 [![Groq](https://img.shields.io/badge/Groq-f55036?logo=groq&logoColor=white&style=flat-square)](https://groq.com)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white&style=flat-square)](https://vercel.com)
 
 **Rendering** — Next.js 16.2.3 (App Router, Turbopack), React 19.2.4, TypeScript 5, Tailwind CSS 4. The globe is `react-globe.gl` 2.37 on top of `three` + `h3-js` 4.4.
 
-**Data** — Supabase stores stories (PostgreSQL + REST, no SDK). Upstash Redis handles rate limiting via the Vercel integration (`@upstash/ratelimit` 2.0 sliding window, 3/h per IP hash). Groq's Llama 3.3 70B moderates content with a crisis-aware prompt that allows crisis-related content and blocks attacks, threats and spam.
+**Data** — Supabase stores stories (PostgreSQL + REST, no SDK) and does the rate limiting: a Postgres function called before moderation allows 3 submissions per hour per IP hash. Groq's Llama 3.3 70B moderates content with a crisis-aware prompt that allows crisis-related content and blocks attacks, threats and spam.
 
 ## Deploy
 

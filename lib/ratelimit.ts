@@ -1,36 +1,21 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { hitRateLimit, supabaseLive } from "./supabase";
 
-const WINDOW_MS = 60 * 60 * 1000;
+const WINDOW_SECONDS = 60 * 60;
 const MAX = 3;
 
 type Checker = (ipHash: string) => Promise<boolean>;
 
-function hasUpstashEnv(): boolean {
-  return Boolean(
-    (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) &&
-      (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN),
-  );
-}
-
-function createUpstashChecker(): Checker {
-  const limiter = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(MAX, "1 h"),
-    analytics: true,
-    prefix: "sytt:rl",
-  });
-  return async (ipHash) => {
-    const { success } = await limiter.limit(ipHash);
-    return !success;
-  };
+// Prod: one RPC into Postgres (rate_limit_hit in supabase-setup.sql) that
+// counts and records the attempt atomically, before moderation runs.
+function createSupabaseChecker(): Checker {
+  return (ipHash) => hitRateLimit(ipHash, MAX, WINDOW_SECONDS);
 }
 
 function createMemoryChecker(): Checker {
   const store = new Map<string, number[]>();
   return async (ipHash) => {
     const now = Date.now();
-    const recent = (store.get(ipHash) ?? []).filter((t) => now - t < WINDOW_MS);
+    const recent = (store.get(ipHash) ?? []).filter((t) => now - t < WINDOW_SECONDS * 1000);
     recent.push(now);
     store.set(ipHash, recent);
     return recent.length > MAX;
@@ -43,12 +28,12 @@ let resolved = false;
 function resolveChecker(): Checker | null {
   if (resolved) return checker;
   resolved = true;
-  if (hasUpstashEnv()) {
-    checker = createUpstashChecker();
+  if (supabaseLive) {
+    checker = createSupabaseChecker();
   } else if (process.env.NODE_ENV !== "production") {
     checker = createMemoryChecker();
   } else {
-    console.error("[ratelimit] prod without Upstash env — failing closed");
+    console.error("[ratelimit] prod without Supabase env — failing closed");
     checker = null;
   }
   return checker;
